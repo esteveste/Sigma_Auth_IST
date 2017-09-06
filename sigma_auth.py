@@ -10,7 +10,8 @@ import subprocess
 import threading
 
 # get pass
-passwd = getpass.unix_getpass("Sigma Password:")
+# input subprocess is in bytes
+passwd = getpass.unix_getpass("Sigma Password:").encode()
 
 
 def sigma_auth():
@@ -21,18 +22,18 @@ def sigma_auth():
             try:
                 p = subprocess.Popen(
                     ['kinit'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                stdout, stderr = p.communicate(input=passwd + '\n')
+                stdout, stderr = p.communicate(input=passwd)
                 os.system('aklog')
                 time.sleep(2)  # litle pause
                 if(not got_permissions()):
-                    print("Sigma Auth Error After Kinit Error",
-                          "Token not working after sending terminal commands\n" + stdout + '\n' + stderr)
+                    print(
+                        "Sigma Auth Error After Kinit -R Error Not getting permissions\n", stdout, '\n', stderr)
             except Exception as e:
                 print("Sigma Auth Kinit Error", e)
 
 
 def got_permissions():
-    return os.access('~', os.R_OK) & os.access('~', os.W_OK) & os.access('~', os.X_OK)
+    return os.access('.', os.R_OK) & os.access('.', os.W_OK) & os.access('.', os.X_OK)
 
 
 thread = threading.Thread(target=sigma_auth, args=())
